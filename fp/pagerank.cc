@@ -13,13 +13,13 @@ const double DAMPING = 0.80;
 int ITERATIONS = 100; // Default number of iterations
 
 int main(int argc, char* argv[]) {
-
-    // Checks for the correct number of arguments. Otherwise it prints usage.
+    // Check for correct number of command-line arguments
     if (argc < 2) {
-        cerr << "Usage: " << argv[0] << " graph.txt" << " Optional_#Iterations"<< endl;
-        return 1; 
-    }  
+        cerr << "Usage: " << argv[0] << " graph.txt Optional_#Iterations" << endl;
+        return 1;
+    }
 
+    // If a custom iteration count is provided, use it
     if (argc == 3) {
         int iterations = atoi(argv[2]);
         if (iterations > 0) {
@@ -29,57 +29,75 @@ int main(int argc, char* argv[]) {
         }
     }
 
-
     
-    // Read the graph file name from command line arguments
     string filename = argv[1];
-    unordered_map<int, vector<int>> out_links;
-    unordered_map<int, unordered_set<int>> in_links;
-    unordered_set<int> nodes; // To store unique nodes
+    // Maps and sets are used for setup. Once the graph is built, we can convert to vectors for SIMD operations.
+    unordered_map<int, vector<int>> out_links_map;
+    unordered_map<int, unordered_set<int>> in_links_map;
+    unordered_set<int> node_ids;
 
     auto start = chrono::high_resolution_clock::now();
 
-    // Parse graph file, add edges to out_links and in_links and collect unique nodes
+    // Parse input file and build graph structure
     ifstream infile(filename);
     int src, dst;
     while (infile >> src >> dst) {
-        out_links[src].push_back(dst);
-        in_links[dst].insert(src);
-        nodes.insert(src);
-        nodes.insert(dst);
+        out_links_map[src].push_back(dst);
+        in_links_map[dst].insert(src);
+        node_ids.insert(src);
+        node_ids.insert(dst);
     }
 
-    // Initialize Rank vector values
-    int n = nodes.size();
-    unordered_map<int, double> rank;
-    for (int node : nodes) {
-        rank[node] = (1.0 - DAMPING) / n;
+    // Create ordered list of node IDs and mapping to index for O(1) access in the pagerank algorithm
+    vector<int> nodes(node_ids.begin(), node_ids.end());
+    sort(nodes.begin(), nodes.end());
+    unordered_map<int, int> node_to_index;
+    for (int i = 0; i < nodes.size(); i++) {
+        node_to_index[nodes[i]] = i;
     }
 
-    // PageRank main loop. Iterate for a fixed number of times
-    for (int t = 0; t < ITERATIONS; t++) {
-        unordered_map<int, double> new_rank;
+    int unique_nodes = nodes.size();
+    vector<double> rank(unique_nodes, (1.0 - DAMPING) / unique_nodes); // Initialize ranks
+    vector<vector<int>> out_links(unique_nodes);
+    vector<vector<int>> in_links(unique_nodes);
 
-        // Compute new ranks for each node
-        for (int node : nodes) {
-            double sum = 0.0;
-            // Accumulate contributions from all incoming links.
-            for (int in_node : in_links[node]) {
-                int out_degree = out_links[in_node].size();
-                if (out_degree > 0) {
-                    sum += rank[in_node] / out_degree; 
-                }
-            }
-            // Apply the PageRank formula to compute this node's new rank for the current iteration
-            new_rank[node] = DAMPING * sum + (1.0 - DAMPING) / n;
+    // Convert graph to indexed vectors for faster access (prepares for SIMD/OpenMP)
+    // For each original node (pair.first), map its neighbors to their indices 
+    for (const auto& pair : out_links_map) {
+        int idx = node_to_index[pair.first];
+        for (int neighbor : pair.second) {
+            out_links[idx].push_back(node_to_index[neighbor]);
         }
-        rank = move(new_rank);
     }
 
+    for (const auto& pair : in_links_map) {
+        int idx = node_to_index[pair.first];
+        for (int neighbor : pair.second) {
+            in_links[idx].push_back(node_to_index[neighbor]);
+        }
+    }
 
+    // Main PageRank iteration loop
+    for (int iter = 0; iter < ITERATIONS; iter++) {
+        vector<double> new_rank(unique_nodes);
+        for (int node = 0; node < unique_nodes; node++) {
+            double sum = 0.0;
+            // Iterate over incoming links, calculating the contribution to the rank
+            for (int in_idx : in_links[node]) {
+                int out_degree = out_links[in_idx].size();
+                sum += rank[in_idx] / out_degree;
+            }
+            new_rank[node] = DAMPING * sum + (1.0 - DAMPING) / unique_nodes;
+        }
+        rank = move(new_rank); // Efficient rank update
+    }
 
-    // Output top 10 nodes by rank
-    vector<pair<int, double>> ranked(rank.begin(), rank.end());
+    // Collect and sort top-10 ranked nodes
+    vector<pair<int, double>> ranked;
+    for (int i = 0; i < unique_nodes; i++) {
+        ranked.emplace_back(nodes[i], rank[i]);
+    }
+
     sort(ranked.begin(), ranked.end(), [](auto& a, auto& b) {
         return a.second > b.second;
     });
@@ -90,7 +108,6 @@ int main(int argc, char* argv[]) {
 
     auto end = chrono::high_resolution_clock::now();
     chrono::duration<double> duration = end - start;
-
     cout << "Total program time: " << duration.count() << " seconds" << endl;
 
     return 0;
