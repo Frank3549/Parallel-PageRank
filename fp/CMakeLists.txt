@@ -6,3 +6,15 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 #add_executable(project-main
 #  main.cc
 #)
+
+# Add current directory to include search path
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+# Find OpenMP
+find_package(OpenMP REQUIRED)
+
+# Create pagerank executable from pagerank.cc
+add_executable(pagerank pagerank.cc)
+
+# Link OpenMP 
+target_link_libraries(pagerank PUBLIC OpenMP::OpenMP_CXX Threads::Threads)

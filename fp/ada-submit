@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Submit CS416 PA1 programs as a job to ada
+
+# Set SLURM options (you should not need to change these)
+#SBATCH --job-name=pa1                          # Job name
+#SBATCH --output=Project-%j.out           # Name for output log file (%j is job ID)
+#SBATCH --cpus-per-task=36                      # Request the entire node
+#SBATCH --partition=short                       # Partition (queue) 
+#SBATCH --time=00:05:00                         # Time limit hrs:min:sec
+#SBATCH --exclude=node[018-019,021-022]         # Only use "original" nodes with 36 cores
+
+# DON'T MODIFY THE SLURM OPTIONS ABOVE THIS LINE
+
+# Print SLURM envirionment variables
+echo "# Job Info ----------------------------"
+echo "Job ID: ${SLURM_JOB_ID}"
+echo "Node: ${SLURMD_NODENAME}"
+echo "Starting: "`date +"%D %T"`
+
+echo -e "\n# Run Results -------------------------"
+
+# Here you can run the programs to complete the assignment, e.g.
+cd $SLURM_SUBMIT_DIR
+
+echo "Running small_graph.txt"
+./pagerank tests/small_graph.txt
+
+echo ""
+
+echo "Running benchmark_graph.txt"
+./pagerank tests/benchmark_graph.txt
+
+# If you want to sweep a series of parameters you can use a bash for loop, e.g.,
+# for threads in 1 2 3 4 8 18 36
+# do
+#  ./mandelbrot-main --threads $threads
+# done
+
+# When running the performance testing for 8 threads, we can obtain improved performance
+# and reach our performance goals by binding the threads to a specific and consistent set
+# of cores with the taskset utility. The following launches the mandelbrot program with 8
+# threads, where those threads are bound to cores 0-7 (inclusive):
+# taskset -c 0-7 ./mandelbrot-main --threads 8
+# You could do the same within the loop above with:
+# taskset -c 0-$((threads - 1)) ./mandelbrot-main --threads $threads
+
+
+# For reference, dump info about the processor
+echo -e "\n# CPU Info ----------------------------"
+lscpu
