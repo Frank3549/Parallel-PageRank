@@ -15,6 +15,6 @@ find_package(OpenMP REQUIRED)
 
 # Create pagerank executable from pagerank.cc
 add_executable(pagerank pagerank.cc)
-
+add_executable(pagerankSerial pagerankSerial.cc)
 # Link OpenMP 
 target_link_libraries(pagerank PUBLIC OpenMP::OpenMP_CXX Threads::Threads)

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Submit CS416 PA1 programs as a job to ada
+# Submit CS416 project programs as a job to ada
 
 # Set SLURM options (you should not need to change these)
 #SBATCH --job-name=pa1                          # Job name
@@ -11,40 +11,30 @@
 
 # DON'T MODIFY THE SLURM OPTIONS ABOVE THIS LINE
 
-# Print SLURM envirionment variables
+# Job start info
 echo "# Job Info ----------------------------"
 echo "Job ID: ${SLURM_JOB_ID}"
 echo "Node: ${SLURMD_NODENAME}"
-echo "Starting: "`date +"%D %T"`
+echo "Starting: $(date +"%D %T")"
 
-echo -e "\n# Run Results -------------------------"
+echo -e "\n# Run Results -------------------------\n"
 
-# Here you can run the programs to complete the assignment, e.g.
-cd $SLURM_SUBMIT_DIR
-
+# Run Serial Implementation
+echo -e "\n# Serial Results -------------------------\n"
 echo "Running small_graph.txt"
-./pagerank tests/small_graph.txt
+./pagerankSerial tests/small_graph.txt
 
-echo ""
+echo -e "\nRunning benchmark_graph.txt"
+./pagerankSerial tests/benchmark_graph.txt
 
-echo "Running benchmark_graph.txt"
-./pagerank tests/benchmark_graph.txt
+# Run OpenMP Parallel Implementation with core binding to cores 0-7
+echo -e "\n# Parallel Results (taskset 0–7) -------------------------\n"
+echo "Running small_graph.txt with taskset"
+taskset -c 0-7 ./pagerank tests/small_graph.txt
 
-# If you want to sweep a series of parameters you can use a bash for loop, e.g.,
-# for threads in 1 2 3 4 8 18 36
-# do
-#  ./mandelbrot-main --threads $threads
-# done
+echo -e "\nRunning benchmark_graph.txt with taskset"
+taskset -c 0-7 ./pagerank tests/benchmark_graph.txt
 
-# When running the performance testing for 8 threads, we can obtain improved performance
-# and reach our performance goals by binding the threads to a specific and consistent set
-# of cores with the taskset utility. The following launches the mandelbrot program with 8
-# threads, where those threads are bound to cores 0-7 (inclusive):
-# taskset -c 0-7 ./mandelbrot-main --threads 8
-# You could do the same within the loop above with:
-# taskset -c 0-$((threads - 1)) ./mandelbrot-main --threads $threads
-
-
-# For reference, dump info about the processor
+# Dump system info for reproducibility
 echo -e "\n# CPU Info ----------------------------"
 lscpu

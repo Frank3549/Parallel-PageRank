@@ -6,7 +6,6 @@
 #include <unordered_set>
 #include <algorithm>
 #include <chrono>
-#include <omp.h>
 
 using namespace std;
 
@@ -81,8 +80,6 @@ int main(int argc, char* argv[]) {
     // Main PageRank iteration loop
     for (int iter = 0; iter < ITERATIONS; iter++) {
         vector<double> new_rank(unique_nodes);
-
-        #pragma omp parallel for 
         for (int node = 0; node < unique_nodes; node++) {
             double sum = 0.0;
             // Iterate over incoming links, calculating the contribution to the rank
