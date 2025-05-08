@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Submit CS416 project programs as a job to ada
+
+# Set SLURM options (you should not need to change these)
+#SBATCH --job-name=pa1                          # Job name
+#SBATCH --output=Project-%j.out           # Name for output log file (%j is job ID)
+#SBATCH --cpus-per-task=36                      # Request the entire node
+#SBATCH --partition=short                       # Partition (queue) 
+#SBATCH --time=00:05:00                         # Time limit hrs:min:sec
+#SBATCH --exclude=node[018-019,021-022]         # Only use "original" nodes with 36 cores
+
+# DON'T MODIFY THE SLURM OPTIONS ABOVE THIS LINE
+
+# Job start info
+echo "# Job Info ----------------------------"
+echo "Job ID: ${SLURM_JOB_ID}"
+echo "Node: ${SLURMD_NODENAME}"
+echo "Starting: $(date +"%D %T")"
+
+echo -e "\n# Creating a Synthetic Graph -------------------------\n"
+
+./syntheticGraph 
+
+# Dump system info for reproducibility
+echo -e "\n# CPU Info ----------------------------"
+lscpu
