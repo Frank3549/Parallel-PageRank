@@ -17,7 +17,7 @@ echo "Job ID: ${SLURM_JOB_ID}"
 echo "Node: ${SLURMD_NODENAME}"
 echo "Starting: $(date +"%D %T")"
 
-GRAPH_FILE="tests/synthetic_graph100kUnique.txt"
+GRAPH_FILE="tests/synthetic_graph500kUnique.txt"
 
 
 echo -e "\n# Graph Size --------------------------"
