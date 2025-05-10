@@ -82,14 +82,18 @@ int main(int argc, char* argv[]) {
     for (int iter = 0; iter < ITERATIONS; iter++) {
         vector<double> new_rank(unique_nodes);
 
-        #pragma omp parallel for 
+        #pragma omp parallel for
         for (int node = 0; node < unique_nodes; node++) {
             double sum = 0.0;
-            // Iterate over incoming links, calculating the contribution to the rank
-            for (int in_idx : in_links[node]) {
-                int out_degree = out_links[in_idx].size();
-                sum += rank[in_idx] / out_degree;
+            const auto& incoming = in_links[node];
+            
+            // Use OpenMP SIMD for inner loop (not parallel)
+            #pragma omp simd reduction(+:sum)
+            for (size_t i = 0; i < incoming.size(); i++) {
+                int in_idx = incoming[i];
+                sum += rank[in_idx] / out_links[in_idx].size();
             }
+            
             new_rank[node] = DAMPING * sum + (1.0 - DAMPING) / unique_nodes;
         }
         rank = move(new_rank); // Efficient rank update

@@ -17,7 +17,7 @@ echo "Job ID: ${SLURM_JOB_ID}"
 echo "Node: ${SLURMD_NODENAME}"
 echo "Starting: $(date +"%D %T")"
 
-GRAPH_FILE="tests/synthetic_graph10mil.txt"
+GRAPH_FILE="tests/synthetic_graph100kUnique.txt"
 
 
 echo -e "\n# Graph Size --------------------------"
@@ -38,3 +38,6 @@ taskset -c 0-35 ./pagerank "$GRAPH_FILE"
 # Dump system info for reproducibility
 echo -e "\n# CPU Info ----------------------------"
 lscpu
+
+
+#
