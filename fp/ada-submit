@@ -17,8 +17,7 @@ echo "Job ID: ${SLURM_JOB_ID}"
 echo "Node: ${SLURMD_NODENAME}"
 echo "Starting: $(date +"%D %T")"
 
-GRAPH_FILE="tests/synthetic_graph5mil10k.txt"
-
+GRAPH_FILE="tests/synthetic_graph10mil.txt"
 
 echo -e "\n# Graph Size --------------------------"
 wc -l "$GRAPH_FILE"
@@ -29,11 +28,16 @@ echo -e "\n# Serial Results -------------------------\n"
 echo -e "\nRunning synthetic_graph.txt"
 ./pagerankSerial "$GRAPH_FILE"
 
-# Run OpenMP Parallel Implementation with core binding to cores 0-7
-echo -e "\n# Parallel Results (taskset 0–35) -------------------------\n"
+# Run OpenMP Parallel Implementation 
+echo -e "\n# Parallel Results -------------------------\n"
 
 echo -e "\nRunning synthetic_graph.txt"
-taskset -c 0-35 ./pagerank "$GRAPH_FILE"
+
+for NUM_THREADS in 1 2 4 8 16 32; do
+  echo -e "\n# OpenMP Results with $NUM_THREADS threads -------------------------\n"
+  echo "Running with $NUM_THREADS threads (cores 0-$((NUM_THREADS - 1)))"
+  taskset -c 0-$((NUM_THREADS - 1)) ./pagerank "$GRAPH_FILE"
+done
 
 # Dump system info for reproducibility
 echo -e "\n# CPU Info ----------------------------"
