@@ -33,7 +33,7 @@ echo -e "\n# Parallel Results -------------------------\n"
 
 echo -e "\nRunning synthetic_graph.txt"
 
-for NUM_THREADS in 1 2 4 8 16 32; do
+for NUM_THREADS in 8 16; do
   echo -e "\n# OpenMP Results with $NUM_THREADS threads -------------------------\n"
   echo "Running with $NUM_THREADS threads (cores 0-$((NUM_THREADS - 1)))"
   taskset -c 0-$((NUM_THREADS - 1)) ./pagerank "$GRAPH_FILE"
