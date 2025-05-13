@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
         node_ids.insert(dst);
     }
 
-    // Create ordered list of node IDs and mapping to index for O(1) access in the pagerank algorithm
+    // Create sorted list of node IDs and map them to indices [0, N)
     vector<int> nodes(node_ids.begin(), node_ids.end());
     sort(nodes.begin(), nodes.end());
     unordered_map<int, int> node_to_index;
