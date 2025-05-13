@@ -8,7 +8,7 @@ namespace fs = std::filesystem;
 
 int main() {
     const long long NUM_EDGES = 5000000;  // 5 million edges
-    const int NUM_NODES = 10000;         // 300k unique nodes
+    const int NUM_NODES = 500000;         // 500k unique nodes
     const string OUTPUT_FILE = "synthetic_graph.txt";
 
     // If the output file already exists, we will overwrite it
