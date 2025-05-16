@@ -53,11 +53,11 @@ if __name__ == "__main__":
     
     # Output: (to_node, (from_node, 1 / out_degree of from_node))
     M = edges_with_degree.map(lambda x: (x[1][0], (x[0], 1.0 / x[1][1]) )).cache()
-     
+    M.count() # Force Evaluation of M before the timer starts.
+
 
     # Rank Vector setup with initial rank of (1.0 - BETA) / num_vertices
     R = vertices.map(lambda x: (x, (1.0 - BETA) / num_vertices))
-    M.count() # Force Evaluation of M before the timer starts.
 
     # Time execution
     begin_time = time.time()
