@@ -4,11 +4,6 @@ import time
 
 from pyspark.sql import SparkSession
 
-#-------------------------------------------------------------------
-#Imported code from PA5 with slight modification to time placement. 
-#-------------------------------------------------------------------
-
-
 BETA = 0.80
 
 def parse_edge(line):
@@ -57,12 +52,12 @@ if __name__ == "__main__":
     edges_with_degree = edges.join(out_degrees)
     
     # Output: (to_node, (from_node, 1 / out_degree of from_node))
-    M = edges_with_degree.map(lambda x: (x[1][0], (x[0], 1.0 / x[1][1]) ))
+    M = edges_with_degree.map(lambda x: (x[1][0], (x[0], 1.0 / x[1][1]) )).cache()
      
 
     # Rank Vector setup with initial rank of (1.0 - BETA) / num_vertices
-    R = vertices.map(lambda x: (x, (1.0 - BETA) / num_vertices)).cache()
-    
+    R = vertices.map(lambda x: (x, (1.0 - BETA) / num_vertices))
+    M.count() # Force Evaluation of M before the timer starts.
 
     # Time execution
     begin_time = time.time()
