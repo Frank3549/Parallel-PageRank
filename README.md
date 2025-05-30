@@ -1,21 +1,29 @@
-# CS416 Programming Assignments
+# Parallel PageRank Algorithm
 
-This directory contains the starter code for several of the CS416 assignments.
+This project implements and compares high-performance parallelized versions of Google's PageRank algorithm using two different parallel computing models:
+- **OpenMP + SIMD** (shared-memory, C++)
+- **Apache Spark** (distributed-memory, Python)
 
-## Getting Started
+The aim was to optimize runtime and scalability for large synthetic graph datasets.
 
-Refer to Canvas for the pre-requisites for building these assignments. At a minimum you will need CMake and a C++ compiler that supports C++17. CMake will test for other prerequisites.
+## Features & Performance
+- Parallelized PageRank computation using OpenMP directives and explicit SIMD vectorization (256-bit instructions).
+- Distributed implementation with Apache Spark leveraging RDD transformations and actions.
+- **13x speedup** (0.12s vs. 1.57s serial) achieved on graphs with 10M edges using OpenMP.
+- Demonstrated significant performance advantage with shared-memory parallelism compared to Spark's distributed model for graphs with high node counts.
 
-## Building
+## Technologies
+- **Languages:** C++, Python
+- **Parallel Libraries/Frameworks:** OpenMP, Apache Spark
+- **Optimizations:** SIMD, Thread Affinity (taskset)
 
-Once you have the dependencies installed, you will need to create the build files with CMake. For simplicity we will use an "in-source" build. 
+## Performance Results
 
-On the *ada* cluster run the following command from within the top-level directory.
-
-```
-cmake .
-```
-
-You should only need to do this once per clone of the skeleton (or if you pull updates the to the skeleton). You should not need to modify any of the build files themselves.
-
-Once you have run the above command to create the build files, you can build the individual assignments as described in README files in the assignment directories.
+| Graph Size (Edges/Nodes) | Method          | Runtime (s) |
+|--------------------------|-----------------|-------------|
+| 1M edges / 10K nodes     | Serial          | 0.19        |
+|                          | OpenMP (16 cores)| 0.016       |
+|                          | Spark (Cluster) | 45.93       |
+| 10M edges / 10K nodes    | Serial          | 1.57        |
+|                          | OpenMP (16 cores)| 0.12        |
+|                          | Spark (Cluster) | 192.29      |
